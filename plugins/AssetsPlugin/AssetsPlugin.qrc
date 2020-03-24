@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/folder.png</file>
+        <file>icons/material.png</file>
+        <file>icons/mesh.png</file>
+        <file>icons/prefab.png</file>
+        <file>icons/shader.png</file>
+        <file>icons/skeleton.png</file>
+        <file>icons/sound.png</file>
+        <file>icons/texture.png</file>
+        <file>icons/unknown.png</file>
+        <file>icons/world.png</file>
+        <file>icons/ai.png</file>
+        <file>icons/anim.png</file>
+    </qresource>
+</RCC>
