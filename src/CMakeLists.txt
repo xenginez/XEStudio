@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 3.12)
 FILE(GLOB_RECURSE SRC_FILES *.cpp *.qrc *.ui)
 add_library(XEStudio SHARED ${SRC_FILES})
 
-target_link_libraries(XEStudio PRIVATE Qt5::Widgets Qt5::Sql XE)
+target_link_libraries(XEStudio PRIVATE Qt5::Widgets Qt5::Sql XE zlib Zipper-static)
 
 target_compile_definitions(XEStudio PRIVATE XESTUDIO_LIBRARY)
 

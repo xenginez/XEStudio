@@ -3,6 +3,8 @@
 
 #include "XESFramework.h"
 
+#include <zipper/zipper.h>
+
 ProCreateDialog::ProCreateDialog( QWidget * parent /*= nullptr */ )
 	:QDialog( parent ), ui( new Ui::ProCreateDialog )
 {
