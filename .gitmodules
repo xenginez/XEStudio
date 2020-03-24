@@ -1,0 +1,3 @@
+[submodule "3rdparty/zipper"]
+	path = 3rdparty/zipper
+	url = https://github.com/sebastiandev/zipper.git
