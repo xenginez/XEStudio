@@ -1,12 +1,13 @@
 #include "XESDockWidget.h"
 
+#include "XESDockCmd.h"
 #include "XESFramework.h"
 
 struct XESDockWidget::Private
 {
 	bool _Dirty = false;
-	XE::Stack< XE::XESCMD > _Todo;
-	XE::Stack< XE::XESCMD > _Undo;
+	XE::Stack< XESDockCmdPtr > _Todo;
+	XE::Stack< XESDockCmdPtr > _Undo;
 };
 
 XESDockWidget::XESDockWidget( const QString & title, QWidget * parent /*= nullptr*/, Qt::WindowFlags flags /*= Qt::WindowFlags() */ )
@@ -28,14 +29,20 @@ XESDockWidget::~XESDockWidget()
 
 void XESDockWidget::Save()
 {
-	_p->_Dirty = false;
+	if( _p->_Dirty )
+	{
+		_p->_Todo = {};
+		_p->_Undo = {};
 
-	setWindowTitle( windowTitle().replace( " *", "" ) );
+		_p->_Dirty = false;
+
+		setWindowTitle( windowTitle().replace( " *", "" ) );
+	}
 }
 
-void XESDockWidget::Execute( XE::XESCMD && cmd )
+void XESDockWidget::Execute( const XESDockCmdPtr & cmd )
 {
-	TodoCMD( std::move( cmd ) );
+	TodoCMD( cmd );
 }
 
 void XESDockWidget::keyPressEvent( QKeyEvent * event )
@@ -49,7 +56,7 @@ void XESDockWidget::keyPressEvent( QKeyEvent * event )
 				auto cmd = _p->_Todo.top();
 				_p->_Todo.pop();
 
-				UndoCMD( std::move( cmd ) );
+				UndoCMD( cmd );
 			}
 		}
 		else if( event->key() == Qt::Key_Y )
@@ -59,29 +66,23 @@ void XESDockWidget::keyPressEvent( QKeyEvent * event )
 				auto cmd = _p->_Undo.top();
 				_p->_Undo.pop();
 
-				TodoCMD( std::move( cmd ) );
+				TodoCMD( cmd );
 			}
 		}
 		else if( event->key() == Qt::Key_S )
 		{
-			if( _p->_Dirty )
-			{
-				_p->_Todo = {};
-				_p->_Undo = {};
-
-				Save();
-			}
+			Save();
 		}
 	}
 
 	QDockWidget::keyReleaseEvent( event );
 }
 
-void XESDockWidget::TodoCMD( XE::XESCMD && cmd )
+void XESDockWidget::TodoCMD( const XESDockCmdPtr & cmd )
 {
-	if( cmd.Todo )
+	if( cmd )
 	{
-		cmd.Todo();
+		cmd->Todo();
 
 		if( !_p->_Dirty )
 		{
@@ -93,11 +94,11 @@ void XESDockWidget::TodoCMD( XE::XESCMD && cmd )
 	}
 }
 
-void XESDockWidget::UndoCMD( XE::XESCMD && cmd )
+void XESDockWidget::UndoCMD( const XESDockCmdPtr & cmd )
 {
-	if( cmd.Undo )
+	if( cmd )
 	{
-		cmd.Undo();
+		cmd->Undo();
 
 		if( !_p->_Dirty )
 		{

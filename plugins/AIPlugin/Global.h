@@ -11,6 +11,7 @@
 
 #include "XEStudio.h"
 
+class AIDockWidget;
 class GraphicsItem;
 class GraphicsView;
 class GraphicsScene;

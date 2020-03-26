@@ -15,13 +15,9 @@ BEG_XE_NAMESPACE
 
 class XESFramework;
 
-struct XES_API XESCMD
-{
-	std::function<void()> Todo;
-	std::function<void()> Undo;
-};
-
 END_XE_NAMESPACE
+
+DECL_PTR( XESDockCmd );
 
 class XESMainWindow;
 class XESMetaWidget;

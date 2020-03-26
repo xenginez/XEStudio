@@ -1,5 +1,6 @@
 #include "GraphicsWidget.h"
 
+#include "AIDockWidget.h"
 #include "BTGraphicsScene.h"
 #include "FSMGraphicsScene.h"
 
@@ -53,6 +54,11 @@ void GraphicsWidget::SetAIModule( const XE::AIModulePtr & val )
 	_Splitter->insertWidget( 0, _BlockBoardWidget );
 	_Splitter->setStretchFactor( 0, 4 );
 	_Splitter->setStretchFactor( 1, 6 );
+}
+
+AIDockWidget * GraphicsWidget::GetDockWidget() const
+{
+	return dynamic_cast< AIDockWidget * >( parent() );
 }
 
 void GraphicsWidget::ShowProperty( const XE::ObjectPtr & val )

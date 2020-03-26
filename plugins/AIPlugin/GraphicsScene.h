@@ -24,6 +24,9 @@ public:
 	virtual void ResetGraphics() = 0;
 
 public:
+	AIDockWidget * GetDockWidget() const;
+
+public:
 	GraphicsView * GetGraphicsView() const;
 
 	void SetGraphicsView( GraphicsView * val );

@@ -1,5 +1,6 @@
 #include "BTGraphicsScene.h"
 
+#include "AIDockWidget.h"
 #include "GraphicsView.h"
 #include "GraphicsWidget.h"
 #include "BTGraphicsSocket.h"
@@ -295,6 +296,26 @@ void BTGraphicsScene::AddSocket( const XE::NodePtr & node )
 
 void BTGraphicsScene::AddNodeAction( QMenu * menu, const XE::IMetaClassPtr & cls )
 {
+	auto add_root = [this]( XE::IMetaClassPtr val )
+	{
+		if( auto tree = GetBehaviorTree() )
+		{
+			auto handle = tree->AddNode( val );
+			tree->SetRoot( handle );
+			ResetGraphics();
+		}
+	};
+
+	auto del_root = [this]()
+	{
+		if( auto tree = GetBehaviorTree() )
+		{
+			tree->RemoveNode( tree->GetRoot() );
+			tree->SetRoot( XE::NodeHandle::Invalid );
+			ResetGraphics();
+		}
+	};
+
 	if( cls->GetDerivedClassSize() )
 	{
 		cls->VisitDerivedClass( [&]( XE::IMetaClassPtr val )
@@ -308,14 +329,9 @@ void BTGraphicsScene::AddNodeAction( QMenu * menu, const XE::IMetaClassPtr & cls
 									{
 										auto m = menu->addMenu( QString::fromUtf8( val->GetName().ToCString() ) );
 
-										connect( m->menuAction(), &QAction::triggered, [this, val]()
+										connect( m->menuAction(), &QAction::triggered, [this, val, add_root, del_root]()
 												 {
-													 if( auto tree = GetBehaviorTree() )
-													 {
-														 auto handle = tree->AddNode( val );
-														 tree->SetRoot( handle );
-														 ResetGraphics();
-													 }
+													 GetDockWidget()->Execute( XE::MakeShared<PackDockCmd>( std::bind( add_root, val ), del_root ) );
 												 } );
 
 										AddNodeAction( m, val );
@@ -323,14 +339,9 @@ void BTGraphicsScene::AddNodeAction( QMenu * menu, const XE::IMetaClassPtr & cls
 									else if( val->IsAbstract() == false )
 									{
 										auto action = menu->addAction( QString::fromUtf8( val->GetName().ToCString() ) );
-										connect( action, &QAction::triggered, [this, val]()
+										connect( action, &QAction::triggered, [this, val, add_root, del_root]()
 												 {
-													 if( auto tree = GetBehaviorTree() )
-													 {
-														 auto handle = tree->AddNode( val );
-														 tree->SetRoot( handle );
-														 ResetGraphics();
-													 }
+													 GetDockWidget()->Execute( XE::MakeShared<PackDockCmd>( std::bind( add_root, val ), del_root ) );
 												 } );
 									}
 								} );

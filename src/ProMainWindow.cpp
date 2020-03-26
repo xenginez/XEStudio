@@ -116,7 +116,7 @@ bool ProMainWindow::eventFilter( QObject * obj, QEvent * event )
 				QFileInfo info( dialog.GetPath() );
 
 				XE::XESFramework::GetCurrentFramework()->SetProjectName( info.baseName().toUtf8().toStdString() );
-				XE::XESFramework::GetCurrentFramework()->SetProjectPath( info.path().toUtf8().toStdString() );
+				XE::XESFramework::GetCurrentFramework()->SetProjectPath( dialog.GetPath().toUtf8().toStdString() );
 
 				auto list = ReadProjectJson();
 				for( auto it = list.begin(); it != list.end(); ++it )

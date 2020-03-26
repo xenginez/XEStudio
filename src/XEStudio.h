@@ -10,6 +10,7 @@
 #define XESTUDIO_H__F05CFA6A_14CD_45DF_8C43_73606FD473BF
 
 #include "Event.h"
+#include "XESDockCmd.h"
 #include "XESFramework.h"
 #include "XESDockWidget.h"
 #include "XESMainWindow.h"

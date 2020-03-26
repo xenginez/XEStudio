@@ -29,7 +29,7 @@ public:
 	virtual void Save();
 
 public:
-	void Execute( XE::XESCMD && cmd );
+	void Execute( const XESDockCmdPtr & cmd );
 
 protected:
 	void keyPressEvent( QKeyEvent * event ) override;
@@ -37,9 +37,9 @@ protected:
 	bool event( QEvent * event ) override;
 
 private:
-	void TodoCMD( XE::XESCMD && cmd );
+	void TodoCMD( const XESDockCmdPtr & cmd );
 
-	void UndoCMD( XE::XESCMD && cmd );
+	void UndoCMD( const XESDockCmdPtr & cmd );
 
 private:
 	Private * _p;

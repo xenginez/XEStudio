@@ -38,6 +38,8 @@ private:
 
 	bool CreateProject();
 
+	void CreateDescription();
+
 private:
 	QString _Path;
 	Ui::ProCreateDialog * ui;

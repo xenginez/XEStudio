@@ -71,7 +71,11 @@
       <item>
        <widget class="QLabel" name="labelDescription">
         <property name="text">
-         <string/>
+         <string>Project Name:
+
+Project Path:
+
+Package:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

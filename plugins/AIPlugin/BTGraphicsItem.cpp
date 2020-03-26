@@ -1,9 +1,138 @@
 #include "BTGraphicsItem.h"
 
+#include "AIDockWidget.h"
 #include "GraphicsView.h"
 #include "GraphicsScene.h"
 #include "GraphicsWidget.h"
 #include "BTGraphicsScene.h"
+
+class AddNodeCmd : public XESDockCmd
+{
+public:
+	AddNodeCmd( const XE::NodePtr & parent, const XE::IMetaClassPtr & type, BTGraphicsScene * scene )
+		:_Parent( parent ), _Type( type ), _Scene( scene )
+	{
+
+	}
+
+public:
+	void Todo() override
+	{
+		if( auto p_node = DP_CAST<XE::CompositeNode>( _Parent ) )
+		{
+			_Handle = p_node->AddChild( _Type );
+		}
+		else if( auto p_node = DP_CAST<XE::ConditionNode>( _Parent ) )
+		{
+			if( p_node->GetChild() != XE::NodeHandle::Invalid )
+			{
+				QMessageBox::warning( nullptr, QObject::tr( "warning" ), QObject::tr( "the node can only have one child node!" ) );
+				return;
+			}
+			_Handle = p_node->AddChild( _Type );
+		}
+		else if( auto p_node = DP_CAST<XE::DecoratorNode>( _Parent ) )
+		{
+			if( p_node->GetChild() != XE::NodeHandle::Invalid )
+			{
+				QMessageBox::warning( nullptr, QObject::tr( "warning" ), QObject::tr( "the node can only have one child node!" ) );
+				return;
+			}
+			_Handle = p_node->AddChild( _Type );
+		}
+
+		_Scene->ResetGraphics();
+	}
+
+	void Undo() override
+	{
+		if( auto p_node = DP_CAST<XE::CompositeNode>( _Parent ) )
+		{
+			p_node->RemoveChild( _Handle );
+		}
+		else if( auto p_node = DP_CAST<XE::ConditionNode>( _Parent ) )
+		{
+			p_node->RemoveChild();
+		}
+		else if( auto p_node = DP_CAST<XE::DecoratorNode>( _Parent ) )
+		{
+			p_node->RemoveChild();
+		}
+
+		_Scene->ResetGraphics();
+	}
+
+private:
+	XE::NodePtr _Parent;
+	XE::NodeHandle _Handle;
+	XE::IMetaClassPtr _Type;
+	BTGraphicsScene * _Scene;
+};
+
+class DelNodeCmd : public XESDockCmd
+{
+public:
+	DelNodeCmd( const XE::NodePtr & parent, const XE::NodeHandle & handle, BTGraphicsScene * scene )
+		:_Parent( parent ), _Handle( handle ), _Scene( scene )
+	{
+
+	}
+
+public:
+	void Todo() override
+	{
+		_Type = _Parent->GetBehaviorTree()->GetNode( _Handle )->GetMetaClass();
+
+		if( auto p_node = DP_CAST<XE::CompositeNode>( _Parent ) )
+		{
+			p_node->RemoveChild( _Handle );
+		}
+		else if( auto p_node = DP_CAST<XE::ConditionNode>( _Parent ) )
+		{
+			p_node->RemoveChild();
+		}
+		else if( auto p_node = DP_CAST<XE::DecoratorNode>( _Parent ) )
+		{
+			p_node->RemoveChild();
+		}
+
+		_Scene->ResetGraphics();
+	}
+
+	void Undo() override
+	{
+		if( auto p_node = DP_CAST<XE::CompositeNode>( _Parent ) )
+		{
+			_Handle = p_node->AddChild( _Type );
+		}
+		else if( auto p_node = DP_CAST<XE::ConditionNode>( _Parent ) )
+		{
+			if( p_node->GetChild() != XE::NodeHandle::Invalid )
+			{
+				QMessageBox::warning( nullptr, QObject::tr( "warning" ), QObject::tr( "the node can only have one child node!" ) );
+				return;
+			}
+			_Handle = p_node->AddChild( _Type );
+		}
+		else if( auto p_node = DP_CAST<XE::DecoratorNode>( _Parent ) )
+		{
+			if( p_node->GetChild() != XE::NodeHandle::Invalid )
+			{
+				QMessageBox::warning( nullptr, QObject::tr( "warning" ), QObject::tr( "the node can only have one child node!" ) );
+				return;
+			}
+			_Handle = p_node->AddChild( _Type );
+		}
+
+		_Scene->ResetGraphics();
+	}
+
+private:
+	XE::NodePtr _Parent;
+	XE::NodeHandle _Handle;
+	XE::IMetaClassPtr _Type;
+	BTGraphicsScene * _Scene;
+};
 
 BTGraphicsItem::BTGraphicsItem( QGraphicsItem * parent /*= nullptr */ )
 	:GraphicsItem( parent )
@@ -113,29 +242,11 @@ void BTGraphicsItem::contextMenuEvent( QGraphicsSceneContextMenuEvent * event )
 	auto delete_action = menu.addAction( QObject::tr( "delete" ) );
 	delete_action->connect( delete_action, &QAction::triggered, [this]()
 							{
-								auto parent = _Node->GetParent();
-								if( parent == XE::NodeHandle::Invalid )
+								auto scene = static_cast< BTGraphicsScene * >( GetGraphicsScene() );
+								if( scene )
 								{
-									_Node->GetBehaviorTree()->RemoveNode( _Node->GetHandle() );
+									scene->GetDockWidget()->Execute( XE::MakeShared<DelNodeCmd>( _Node->GetBehaviorTree()->GetNode( _Node->GetParent() ), _Node->GetHandle(), scene ) );
 								}
-								else
-								{
-									auto node = _Node->GetBehaviorTree()->GetNode( parent );
-									if( auto p_node = DP_CAST<XE::CompositeNode>( node ) )
-									{
-										p_node->RemoveChild( _Node->GetHandle() );
-									}
-									else if( auto p_node = DP_CAST<XE::ConditionNode>( node ) )
-									{
-										p_node->RemoveChild();
-									}
-									else if( auto p_node = DP_CAST<XE::DecoratorNode>( node ) )
-									{
-										p_node->RemoveChild();
-									}
-								}
-
-								static_cast< BTGraphicsScene * >( GetGraphicsScene() )->ResetGraphics();
 							} );
 
 	menu.exec( QCursor::pos() );
@@ -180,30 +291,11 @@ void BTGraphicsItem::AddNodeAction( QMenu * menu, const XE::IMetaClassPtr & cls 
 
 										m->connect( m->menuAction(), &QAction::triggered, [this, val]()
 													{
-														if( auto p_node = DP_CAST<XE::CompositeNode>( _Node ) )
+														auto scene = static_cast< BTGraphicsScene * >( GetGraphicsScene() );
+														if( scene )
 														{
-															p_node->AddChild( val );
+															scene->GetDockWidget()->Execute( XE::MakeShared<AddNodeCmd>( _Node, val, scene ) );
 														}
-														else if( auto p_node = DP_CAST<XE::ConditionNode>( _Node ) )
-														{
-															if( p_node->GetChild() != XE::NodeHandle::Invalid )
-															{
-																QMessageBox::warning( nullptr, QObject::tr( "warning" ), QObject::tr( "the node can only have one child node!" ) );
-																return;
-															}
-															p_node->AddChild( val );
-														}
-														else if( auto p_node = DP_CAST<XE::DecoratorNode>( _Node ) )
-														{
-															if( p_node->GetChild() != XE::NodeHandle::Invalid )
-															{
-																QMessageBox::warning( nullptr, QObject::tr( "warning" ), QObject::tr( "the node can only have one child node!" ) );
-																return;
-															}
-															p_node->AddChild( val );
-														}
-
-														static_cast< BTGraphicsScene * >( GetGraphicsScene() )->ResetGraphics();
 													} );
 
 										AddNodeAction( m, val );
@@ -213,30 +305,11 @@ void BTGraphicsItem::AddNodeAction( QMenu * menu, const XE::IMetaClassPtr & cls 
 										auto action = menu->addAction( QString::fromUtf8( val->GetName().ToCString() ) );
 										action->connect( action, &QAction::triggered, [this, val]()
 														 {
-															 if( auto p_node = DP_CAST<XE::CompositeNode>( _Node ) )
+															 auto scene = static_cast< BTGraphicsScene * >( GetGraphicsScene() );
+															 if( scene )
 															 {
-																 p_node->AddChild( val );
+																 scene->GetDockWidget()->Execute( XE::MakeShared<AddNodeCmd>( _Node, val, scene ) );
 															 }
-															 else if( auto p_node = DP_CAST<XE::ConditionNode>( _Node ) )
-															 {
-																 if( p_node->GetChild() != XE::NodeHandle::Invalid )
-																 {
-																	 QMessageBox::warning( nullptr, QObject::tr( "warning" ), QObject::tr( "the node can only have one child node!" ) );
-																	 return;
-																 }
-																 p_node->AddChild( val );
-															 }
-															 else if( auto p_node = DP_CAST<XE::DecoratorNode>( _Node ) )
-															 {
-																 if( p_node->GetChild() != XE::NodeHandle::Invalid )
-																 {
-																	 QMessageBox::warning( nullptr, QObject::tr( "warning" ), QObject::tr( "the node can only have one child node!" ) );
-																	 return;
-																 }
-																 p_node->AddChild( val );
-															 }
-
-															 static_cast< BTGraphicsScene * >( GetGraphicsScene() )->ResetGraphics();
 														 } );
 									}
 								} );

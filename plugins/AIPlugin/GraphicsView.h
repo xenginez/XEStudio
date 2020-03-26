@@ -21,6 +21,9 @@ public:
 	~GraphicsView() override;
 
 public:
+	AIDockWidget * GetDockWidget() const;
+
+public:
 	GraphicsWidget * GetGraphicsWidget() const;
 
 	void SetGraphicsWidget( GraphicsWidget * val );

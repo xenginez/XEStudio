@@ -20,6 +20,11 @@ GraphicsView::~GraphicsView()
 
 }
 
+AIDockWidget * GraphicsView::GetDockWidget() const
+{
+	return GetGraphicsWidget()->GetDockWidget();
+}
+
 void GraphicsView::wheelEvent( QWheelEvent * event )
 {
 	qreal delta = 0;

@@ -30,6 +30,8 @@ public:
 
 	void Clearup() override;
 
+private:
+	XE::uint64 _Stub;
 };
 
 END_XE_NAMESPACE

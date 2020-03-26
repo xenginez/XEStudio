@@ -88,6 +88,10 @@ void XE::XESFramework::Prepare()
 void XE::XESFramework::Startup()
 {
 	Super::Startup();
+
+	_p->_MainWindow->ResizeDocks();
+
+	_p->_Timer->start( 1 );
 }
 
 void XE::XESFramework::Update()
@@ -259,11 +263,9 @@ void XESFramework::InitQt( int argc, char * argv[] )
 							 Update();
 						 } );
 
-	QTimer::singleShot( 200, [this]()
-						{
-							_p->_MainWindow->ResizeDocks();
-							_p->_Timer->start( 1 );
-						} );
+// 	QTimer::singleShot( 200, [this]()
+// 						{
+// 						} );
 
 	_p->_Application->processEvents();
 }

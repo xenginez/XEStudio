@@ -25,12 +25,12 @@ const QString & ProListWidgetItem::GetPath() const
 
 void ProListWidgetItem::enterEvent( QEvent * event )
 {
-	setStyleSheet( "background-color: rgb(100, 100, 100);" );
+	ui->widget->setStyleSheet( "background-color: rgb(100, 100, 100);" );
 }
-
+ 
 void ProListWidgetItem::leaveEvent( QEvent * event )
 {
-	setStyleSheet( "background-color: rgb(53, 53, 53);" );
+	ui->widget->setStyleSheet( "background-color: rgb(42, 42, 42);" );
 }
 
 void ProListWidgetItem::mouseDoubleClickEvent( QMouseEvent * event )

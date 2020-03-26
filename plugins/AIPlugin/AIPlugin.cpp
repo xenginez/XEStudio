@@ -5,7 +5,7 @@
 USING_XE
 
 AIPlugin::AIPlugin( XESFramework * framework )
-	:Plugin( framework )
+	:Plugin( framework ), _Stub( 0 )
 {
 
 }
@@ -22,7 +22,7 @@ XE::String AIPlugin::GetName() const
 
 void AIPlugin::Startup()
 {
-	GetFramework()->GetEventService()->RegisterListener( XE::OPEN_ASSET_AI, []( EventPtr event )
+	_Stub = GetFramework()->GetEventService()->RegisterListener( XE::OPEN_ASSET_AI, []( EventPtr event )
 														 {
 															 auto widget = new AIDockWidget( XE::XESFramework::GetCurrentFramework()->GetMainWindow() );
 															 widget->SetAssetPath( event->parameter.Value<XE::String>() );
@@ -33,12 +33,12 @@ void AIPlugin::Startup()
 
 void AIPlugin::Update()
 {
-
+	
 }
 
 void AIPlugin::Clearup()
 {
-
+	GetFramework()->GetEventService()->UnregisterListener( XE::OPEN_ASSET_AI, _Stub );
 }
 
 
