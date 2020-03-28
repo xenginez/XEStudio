@@ -29,14 +29,23 @@ void Vec2MetaWidget::Startup( const XE::Variant & val, const QString & tag )
 	ui->doubleSpinBoxX->setValue( v2.x );
 	ui->doubleSpinBoxY->setValue( v2.y );
 }
-
-XE::Variant Vec2MetaWidget::UpdateVariant()
+XE::Variant Vec2MetaWidget::OnUpdateVariant()
 {
 	XE::Vec2 v2;
+
 	v2.x = ui->doubleSpinBoxX->value();
 	v2.y = ui->doubleSpinBoxY->value();
 
-	SetVariant( v2 );
-
-	return GetVariant();
+	return v2;
 }
+
+void Vec2MetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	auto v2 = val.Value<XE::Vec2>();
+
+	ui->doubleSpinBoxX->setValue( v2.x );
+	ui->doubleSpinBoxY->setValue( v2.y );
+}
+

@@ -30,8 +30,7 @@ void MapMetaWidget::Startup( const XE::Variant & val, const QString & tag )
 		AddItem( var );
  	}
 }
-
-XE::Variant MapMetaWidget::UpdateVariant()
+XE::Variant MapMetaWidget::OnUpdateVariant()
 {
 	XE::VariantMap map;
 
@@ -45,9 +44,20 @@ XE::Variant MapMetaWidget::UpdateVariant()
 		map.insert( pair );
 	}
 
-	SetVariant( map );
+	return map;
+}
 
-	return GetVariant();
+void MapMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	ui->tableWidget->clear();
+
+	auto map = val.Value<XE::VariantMap>();
+	for( const auto & var : map )
+	{
+		AddItem( var );
+	}
 }
 
 void MapMetaWidget::OnPushButtonAddClicked()

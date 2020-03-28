@@ -20,17 +20,28 @@ public:
 
 	~XESMetaWidget() override;
 
+Q_SIGNALS:
+	void ResetVariant( const XE::Variant & val );
+
 public:
 	virtual void Startup( const XE::Variant & val, const QString & tag );
 
 	virtual XE::Variant UpdateVariant();
 
+	virtual XE::Variant OnUpdateVariant() = 0;
+
+	virtual void OnResetVariant( const XE::Variant & val );
+
+public:
 	XE::Variant GetVariant() const;
 
 	void SetVariant( const XE::Variant & val );
 
 protected:
 	QString GetTag( const QString & val, const QString & def = "" ) const;
+
+private:
+	XESDockWidget * GetDockWidget() const;
 
 private:
 	XE::Variant _Value;
@@ -51,7 +62,9 @@ public:
 public:
 	void Startup( const XE::Variant & val, const QString & tag ) override;
 
-	XE::Variant UpdateVariant() override;
+	XE::Variant OnUpdateVariant() override;
+
+	void OnResetVariant( const XE::Variant & val ) override;
 
 private:
 	QComboBox * _Widget;
@@ -70,7 +83,9 @@ public:
 public:
 	void Startup( const XE::Variant & val, const QString & tag ) override;
 
-	XE::Variant UpdateVariant() override;
+	XE::Variant OnUpdateVariant() override;
+
+	void OnResetVariant( const XE::Variant & val ) override;
 
 private:
 	void AddProperty( const XE::IMetaPropertyPtr & val );

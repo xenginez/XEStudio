@@ -21,7 +21,7 @@ public:
 	~GraphicsView() override;
 
 public:
-	AIDockWidget * GetDockWidget() const;
+	XESDockWidget * GetDockWidget() const;
 
 public:
 	GraphicsWidget * GetGraphicsWidget() const;

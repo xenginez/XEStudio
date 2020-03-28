@@ -25,10 +25,15 @@ void StringMetaWidget::Startup( const XE::Variant & val, const QString & tag )
 
 	_Widget->setText( QString::fromUtf8( val.Value<XE::String>().ToCString() ) );
 }
-
-XE::Variant StringMetaWidget::UpdateVariant()
+XE::Variant StringMetaWidget::OnUpdateVariant()
 {
-	SetVariant( _Widget->text().toStdString() );
-
-	return GetVariant();
+	return _Widget->text().toStdString();
 }
+
+void StringMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	_Widget->setText( QString::fromUtf8( val.Value<XE::String>().ToCString() ) );
+}
+

@@ -27,7 +27,9 @@ public:
 public:
 	void Startup( const XE::Variant & val, const QString & tag ) override;
 
-	XE::Variant UpdateVariant() override;
+	XE::Variant OnUpdateVariant() override;
+
+	void OnResetVariant( const XE::Variant & val ) override;
 
 private:
 	void OnPushButtonAddClicked();

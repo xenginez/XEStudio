@@ -22,6 +22,7 @@ DECL_PTR( XESDockCmd );
 class XESMainWindow;
 class XESMetaWidget;
 class ProMainWindow;
+class XESDockWidget;
 class ProListWidgetItem;
 
 #endif // TYPE_H__50F0EDDE_3E7A_4617_B83D_D88B16A41674

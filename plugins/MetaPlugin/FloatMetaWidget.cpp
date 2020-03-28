@@ -27,10 +27,15 @@ void FloatMetaWidget::Startup( const XE::Variant & val, const QString & tag )
 
 	_Widget->setValue( val.ToFloat64() );
 }
-
-XE::Variant FloatMetaWidget::UpdateVariant()
+XE::Variant FloatMetaWidget::OnUpdateVariant()
 {
-	SetVariant( _Widget->value() );
-
-	return GetVariant();
+	return _Widget->value();
 }
+
+void FloatMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	_Widget->setValue( val.ToFloat64() );
+}
+

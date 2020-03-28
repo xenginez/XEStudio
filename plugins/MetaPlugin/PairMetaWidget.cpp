@@ -46,14 +46,23 @@ void PairMetaWidget::Startup( const XE::Variant & val, const QString & tag )
 	item->setSizeHint( 0, _ValueWidget->sizeHint() );
 	_Widget->setItemWidget( item, 0, _ValueWidget );
 }
-
-XE::Variant PairMetaWidget::UpdateVariant()
+XE::Variant PairMetaWidget::OnUpdateVariant()
 {
 	XE::VariantPair pair;
+
 	pair.first = _KeyWidget->UpdateVariant();
 	pair.second = _ValueWidget->UpdateVariant();
 
-	SetVariant( pair );
-
-	return GetVariant();
+	return pair;
 }
+
+void PairMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	auto pair = val.Value<XE::VariantPair>();
+
+	_KeyWidget->ResetVariant( pair.first );
+	_ValueWidget->ResetVariant( pair.second );
+}
+

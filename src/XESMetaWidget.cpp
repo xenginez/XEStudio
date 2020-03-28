@@ -1,7 +1,36 @@
 #include "XESMetaWidget.h"
 
+#include "XESDockCmd.h"
+#include "XESDockWidget.h"
+
 #include "XESFramework.h"
 #include "XESMetaService.h"
+
+class MetaVariantCmd : public XESDockCmd
+{
+public:
+	MetaVariantCmd( XESMetaWidget * widget, const XE::Variant & val )
+		:_Widget( widget ), _New( val ), _Old( widget->GetVariant() )
+	{
+
+	}
+
+public:
+	virtual void Todo()
+	{
+		_Widget->ResetVariant( _New );
+	}
+
+	virtual void Undo()
+	{
+		_Widget->ResetVariant( _Old );
+	}
+
+private:
+	XESMetaWidget * _Widget;
+	XE::Variant _Old;
+	XE::Variant _New;
+};
 
 Q_DECLARE_METATYPE( XE::Variant );
 
@@ -9,7 +38,7 @@ IMPLEMENT_META( XESMetaWidget )
 
 XESMetaWidget::XESMetaWidget()
 {
-
+	connect( this, &XESMetaWidget::ResetVariant, this, &XESMetaWidget::OnResetVariant );
 }
 
 XESMetaWidget::~XESMetaWidget()
@@ -39,7 +68,14 @@ void XESMetaWidget::Startup( const XE::Variant & val, const QString & tag /* = "
 
 XE::Variant XESMetaWidget::UpdateVariant()
 {
+	_Value = OnUpdateVariant();
+
 	return _Value;
+}
+
+void XESMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	_Value = val;
 }
 
 XE::Variant XESMetaWidget::GetVariant() const
@@ -49,7 +85,7 @@ XE::Variant XESMetaWidget::GetVariant() const
 
 void XESMetaWidget::SetVariant( const XE::Variant & val )
 {
-	_Value = val;
+	GetDockWidget()->Execute( XE::MakeShared<MetaVariantCmd>( this, val ) );
 }
 
 QString XESMetaWidget::GetTag( const QString & val, const QString & def /*= ""*/ ) const
@@ -62,6 +98,28 @@ QString XESMetaWidget::GetTag( const QString & val, const QString & def /*= ""*/
 	}
 
 	return def;
+}
+
+XESDockWidget * XESMetaWidget::GetDockWidget() const
+{
+	QObject * widget = parent();
+	while( widget != nullptr )
+	{
+		if( auto dockwidget = qobject_cast< XESDockWidget * >( widget ) )
+		{
+			return dockwidget;
+		}
+
+		if( QWidget * p = qobject_cast< QWidget * >( widget ) )
+		{
+			widget = p->parent();
+		}
+		else
+		{
+			widget = nullptr;
+		}
+	}
+	return nullptr;
 }
 
 
@@ -107,11 +165,27 @@ void XESEnumMetaWidget::Startup( const XE::Variant & val, const QString & tag /*
 	}
 }
 
-XE::Variant XESEnumMetaWidget::UpdateVariant()
+XE::Variant XESEnumMetaWidget::OnUpdateVariant()
 {
-	SetVariant( _Widget->itemData( _Widget->currentIndex() ).value<XE::Variant>() );
+	return _Widget->itemData( _Widget->currentIndex() ).value<XE::Variant>();
+}
 
-	return GetVariant();
+void XESEnumMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	if( auto emu = DP_CAST<XE::IMetaEnum>( val.GetType() ) )
+	{
+		auto name = emu->FindName( val );
+		for( int i = 0; i < _Widget->count(); ++i )
+		{
+			if( _Widget->itemText( i ).toStdString() == name.ToStdString() )
+			{
+				_Widget->setCurrentIndex( i );
+				break;
+			}
+		}
+	}
 }
 
 
@@ -157,7 +231,7 @@ void XESClassMetaWidget::Startup( const XE::Variant & val, const QString & tag /
 	{
 		cls->VisitProperty( [this]( XE::IMetaPropertyPtr prop )
 							{
-								if( prop->GetFlag() & XE::IMetaProperty::NoDesign )
+								if( !( prop->GetFlag() & XE::IMetaProperty::NoDesign ) )
 								{
 									AddProperty( prop );
 								}
@@ -165,7 +239,7 @@ void XESClassMetaWidget::Startup( const XE::Variant & val, const QString & tag /
 	}
 }
 
-XE::Variant XESClassMetaWidget::UpdateVariant()
+XE::Variant XESClassMetaWidget::OnUpdateVariant()
 {
 	auto var = GetVariant();
 
@@ -173,16 +247,37 @@ XE::Variant XESClassMetaWidget::UpdateVariant()
 	{
 		cls->VisitProperty( [&]( XE::IMetaPropertyPtr prop )
 							{
-								if( _Props.find( prop->GetName().ToCString() ) != _Props.end() )
+								if( !( prop->GetFlag() & XE::IMetaProperty::NoDesign ) )
 								{
-									prop->Set( var, _Props[prop->GetName().ToCString()]->UpdateVariant() );
+									if( _Props.find( prop->GetName().ToCString() ) != _Props.end() )
+									{
+										prop->Set( var, _Props[prop->GetName().ToCString()]->UpdateVariant() );
+									}
 								}
 							} );
 	}
 
-	SetVariant( var );
-
 	return var;
+}
+
+void XESClassMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	if( auto cls = SP_CAST<XE::IMetaClass>( GetVariant().GetType() ) )
+	{
+		cls->VisitProperty( [this, val]( XE::IMetaPropertyPtr prop )
+							{
+								if( !( prop->GetFlag() & XE::IMetaProperty::NoDesign ) )
+								{
+									auto it = _Props.find( prop->GetName().ToCString() );
+									if( it != _Props.end() )
+									{
+										it.value()->ResetVariant( prop->Get( val ) );
+									}
+								}
+							} );
+	}
 }
 
 void XESClassMetaWidget::AddProperty( const XE::IMetaPropertyPtr & val )

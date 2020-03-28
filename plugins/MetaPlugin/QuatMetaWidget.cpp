@@ -37,8 +37,7 @@ void QuatMetaWidget::Startup( const XE::Variant & val, const QString & tag )
 	ui->doubleSpinBoxY->setValue( e.y );
 	ui->doubleSpinBoxZ->setValue( e.z );
 }
-
-XE::Variant QuatMetaWidget::UpdateVariant()
+XE::Variant QuatMetaWidget::OnUpdateVariant()
 {
 	XE::Vec3 e;
 
@@ -46,7 +45,19 @@ XE::Variant QuatMetaWidget::UpdateVariant()
 	e.y = ui->doubleSpinBoxY->value();
 	e.z = ui->doubleSpinBoxZ->value();
 
-	SetVariant( XE::Mathf::QuatFromEuler( e ) );
-
-	return GetVariant();
+	return XE::Mathf::QuatFromEuler( e );
 }
+
+void QuatMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	auto q = val.Value<XE::Quat>();
+	XE::Vec3 e;
+	XE::Mathf::QuatToEuler( q, e );
+
+	ui->doubleSpinBoxX->setValue( e.x );
+	ui->doubleSpinBoxY->setValue( e.y );
+	ui->doubleSpinBoxZ->setValue( e.z );
+}
+

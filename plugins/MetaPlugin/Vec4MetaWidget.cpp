@@ -40,8 +40,7 @@ void Vec4MetaWidget::Startup( const XE::Variant & val, const QString & tag )
 	ui->doubleSpinBoxZ->setValue( v4.z );
 	ui->doubleSpinBoxW->setValue( v4.w );
 }
-
-XE::Variant Vec4MetaWidget::UpdateVariant()
+XE::Variant Vec4MetaWidget::OnUpdateVariant()
 {
 	XE::Vec4 v4;
 
@@ -50,7 +49,18 @@ XE::Variant Vec4MetaWidget::UpdateVariant()
 	v4.z = ui->doubleSpinBoxZ->value();
 	v4.w = ui->doubleSpinBoxW->value();
 
-	SetVariant( v4 );
-
-	return GetVariant();
+	return v4;
 }
+
+void Vec4MetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	auto v4 = val.Value<XE::Vec4>();
+
+	ui->doubleSpinBoxX->setValue( v4.x );
+	ui->doubleSpinBoxY->setValue( v4.y );
+	ui->doubleSpinBoxZ->setValue( v4.z );
+	ui->doubleSpinBoxW->setValue( v4.w );
+}
+

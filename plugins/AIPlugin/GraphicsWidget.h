@@ -27,7 +27,7 @@ public:
 	void SetAIModule( const XE::AIModulePtr & val );
 
 public:
-	AIDockWidget * GetDockWidget() const;
+	XESDockWidget * GetDockWidget() const;
 
 public:
 	void ShowProperty( const XE::ObjectPtr & val );

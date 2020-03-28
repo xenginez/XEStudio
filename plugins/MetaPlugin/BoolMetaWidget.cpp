@@ -24,9 +24,15 @@ void BoolMetaWidget::Startup( const XE::Variant & val, const QString & tag )
 	_Widget->setChecked( val.ToBool() );
 }
 
-XE::Variant BoolMetaWidget::UpdateVariant()
+XE::Variant BoolMetaWidget::OnUpdateVariant()
 {
-	SetVariant( _Widget->isChecked() );
-
-	return GetVariant();
+	return _Widget->isChecked();
 }
+
+void BoolMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	_Widget->setChecked( val.ToBool() );
+}
+

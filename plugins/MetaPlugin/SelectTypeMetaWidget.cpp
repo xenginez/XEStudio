@@ -65,15 +65,26 @@ void SelectTypeMetaWidget::Startup( const XE::Variant & val, const QString & tag
 				 }
 			 } );
 }
-
-XE::Variant SelectTypeMetaWidget::UpdateVariant()
+XE::Variant SelectTypeMetaWidget::OnUpdateVariant()
 {
 	if( _Widget )
 	{
-		SetVariant( _Widget->UpdateVariant() );
+		return _Widget->UpdateVariant();
 	}
 
 	return GetVariant();
+}
+
+void SelectTypeMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	if( _ComboBox->currentText() != val.GetType()->GetFullName().ToCString() )
+	{
+		_ComboBox->setCurrentText( val.GetType()->GetFullName().ToCString() );
+	}
+
+	_Widget->ResetVariant( val );
 }
 
 void SelectTypeMetaWidget::VisitClass( const XE::IMetaClassPtr & val )

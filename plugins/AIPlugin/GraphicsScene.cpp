@@ -13,7 +13,7 @@ GraphicsScene::~GraphicsScene()
 
 }
 
-AIDockWidget * GraphicsScene::GetDockWidget() const
+XESDockWidget * GraphicsScene::GetDockWidget() const
 {
 	return GetGraphicsView()->GetDockWidget();
 }

@@ -32,7 +32,7 @@ void ArrayMetaWidget::Startup( const XE::Variant & val, const QString & tag )
 	}
 }
 
-XE::Variant ArrayMetaWidget::UpdateVariant()
+XE::Variant ArrayMetaWidget::OnUpdateVariant()
 {
 	XE::VariantArray arr;
 
@@ -42,9 +42,24 @@ XE::Variant ArrayMetaWidget::UpdateVariant()
 		arr.push_back( widget->UpdateVariant() );
 	}
 
-	SetVariant( arr );
+	return arr;
+}
 
-	return GetVariant();
+void ArrayMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	ui->listWidget->clear();
+
+	auto arr = val.ToArray();
+	for( const auto & var : arr )
+	{
+		auto widget = XE::XESFramework::GetCurrentFramework()->GetServiceT<XE::XESMetaService>()->CreateMetaWidget( var );
+		auto item = new QListWidgetItem();
+		item->setSizeHint( widget->sizeHint() );
+		ui->listWidget->addItem( item );
+		ui->listWidget->setItemWidget( item, widget );
+	}
 }
 
 void ArrayMetaWidget::OnPushButtonAddClicked()

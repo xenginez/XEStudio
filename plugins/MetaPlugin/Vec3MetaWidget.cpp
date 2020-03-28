@@ -33,15 +33,25 @@ void Vec3MetaWidget::Startup( const XE::Variant & val, const QString & tag )
 	ui->doubleSpinBoxY->setValue( v3.y );
 	ui->doubleSpinBoxZ->setValue( v3.z );
 }
-
-XE::Variant Vec3MetaWidget::UpdateVariant()
+XE::Variant Vec3MetaWidget::OnUpdateVariant()
 {
 	XE::Vec3 v3;
+
 	v3.x = ui->doubleSpinBoxX->value();
 	v3.y = ui->doubleSpinBoxY->value();
 	v3.z = ui->doubleSpinBoxZ->value();
 
-	SetVariant( v3 );
-
-	return GetVariant();
+	return v3;
 }
+
+void Vec3MetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	auto v3 = val.Value<XE::Vec3>();
+
+	ui->doubleSpinBoxX->setValue( v3.x );
+	ui->doubleSpinBoxY->setValue( v3.y );
+	ui->doubleSpinBoxZ->setValue( v3.z );
+}
+

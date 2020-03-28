@@ -28,10 +28,15 @@ void IntgerMetaWidget::Startup( const XE::Variant & val, const QString & tag )
 
 	_Widget->setValue( val.ToInt32() );
 }
-
-XE::Variant IntgerMetaWidget::UpdateVariant()
+XE::Variant IntgerMetaWidget::OnUpdateVariant()
 {
-	SetVariant( _Widget->value() );
-
-	return GetVariant();
+	return _Widget->value();
 }
+
+void IntgerMetaWidget::OnResetVariant( const XE::Variant & val )
+{
+	XESMetaWidget::OnResetVariant( val );
+
+	_Widget->setValue( val.ToInt32() );
+}
+

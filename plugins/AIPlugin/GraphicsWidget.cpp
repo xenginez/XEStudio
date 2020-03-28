@@ -56,7 +56,7 @@ void GraphicsWidget::SetAIModule( const XE::AIModulePtr & val )
 	_Splitter->setStretchFactor( 1, 6 );
 }
 
-AIDockWidget * GraphicsWidget::GetDockWidget() const
+XESDockWidget * GraphicsWidget::GetDockWidget() const
 {
 	return dynamic_cast< AIDockWidget * >( parent() );
 }
