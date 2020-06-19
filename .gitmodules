@@ -1,3 +1,6 @@
 [submodule "3rdparty/zipper"]
 	path = 3rdparty/zipper
 	url = https://github.com/sebastiandev/zipper.git
+[submodule "3rdparty/ogdf"]
+	path = 3rdparty/ogdf
+	url = https://github.com/ogdf/ogdf.git
