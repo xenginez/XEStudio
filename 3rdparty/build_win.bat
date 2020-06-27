@@ -30,7 +30,7 @@ cd %RD3_PATH%
 echo "build ogdf debug"
 mkdir .\ogdf\build
 cd .\ogdf\build
-cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=.\install\ .. -G "Visual Studio 16 2019" 
+cmake -DCMAKE_INSTALL_PREFIX=.\install\ .. -G "Visual Studio 16 2019" 
 msbuild.exe ".\INSTALL.vcxproj"  /m /nr:true ^
     /p:Configuration=Debug ^
     /p:Platform=x64 ^

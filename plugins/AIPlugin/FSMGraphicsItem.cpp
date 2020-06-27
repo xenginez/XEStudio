@@ -24,7 +24,7 @@ const XE::StatePtr & FSMGraphicsItem::GetState() const
 void FSMGraphicsItem::SetState( const XE::StatePtr & val )
 {
 	_State = val;
-	setPos( QPointF( val->GetPosition().x, val->GetPosition().y ) );
+
 	setToolTip( QString::fromUtf8( val->GetName().ToCString() ) );
 }
 
@@ -113,12 +113,7 @@ void FSMGraphicsItem::contextMenuEvent( QGraphicsSceneContextMenuEvent * event )
 
 QVariant FSMGraphicsItem::itemChange( GraphicsItemChange change, const QVariant & value )
 {
-	if( change == QGraphicsItem::GraphicsItemChange::ItemPositionChange )
-	{
-		auto pos = value.toPointF();
-		_State->SetPosition( XE::Vec2( pos.x(), pos.y() ) );
-	}
-	else if( change == QGraphicsItem::GraphicsItemChange::ItemSelectedChange )
+	if( change == QGraphicsItem::GraphicsItemChange::ItemSelectedChange )
 	{
 		if( value.toBool() )
 		{

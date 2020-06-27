@@ -11,4 +11,4 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELE
 FILE(GLOB_RECURSE SRC_FILES *.cpp *.qrc *.ui)
 add_library(AIPlugin SHARED ${SRC_FILES})
 
-target_link_libraries(AIPlugin PRIVATE Qt5::Widgets Qt5::Sql XE XEStudio)
+target_link_libraries(AIPlugin PRIVATE Qt5::Widgets Qt5::Sql XE XEStudio COIN OGDF)

@@ -1,5 +1,10 @@
 #include "FSMGraphicsScene.h"
 
+#include <ogdf/basic/Graph.h>
+#include <ogdf/basic/GraphAttributes.h>
+#include <ogdf/layered/SugiyamaLayout.h>
+#include <ogdf/layered/FastHierarchyLayout.h>
+
 #include "GraphicsView.h"
 #include "GraphicsWidget.h"
 #include "FSMGraphicsItem.h"
@@ -57,16 +62,7 @@ void FSMGraphicsScene::AddStateMenu( QMenu * menu, const XE::IMetaClassPtr & cls
 
 										connect( m->menuAction() , &QAction::triggered, [this, val]()
 												 {
-													 if( auto machine = GetStateMachine() )
-													 {
-														 auto handle = machine->AddState( val );
-
-														 auto pos = GetGraphicsView()->mapToScene( GetGraphicsView()->mapFromGlobal( QCursor::pos() ) );
-
-														 machine->GetState( handle )->SetPosition( XE::Vec2( pos.x(), pos.y() ) );
-
-														 ResetGraphics();
-													 }
+													 ResetGraphics();
 												 } );
 
 										AddStateMenu( m, val );
@@ -76,16 +72,7 @@ void FSMGraphicsScene::AddStateMenu( QMenu * menu, const XE::IMetaClassPtr & cls
 										auto action = menu->addAction( QString::fromUtf8( val->GetName().ToCString() ) );
 										connect( action, &QAction::triggered, [this, val]()
 												 {
-													 if( auto machine = GetStateMachine() )
-													 {
-														 auto handle = machine->AddState( val );
-														 
-														 auto pos = GetGraphicsView()->mapToScene( GetGraphicsView()->mapFromGlobal( QCursor::pos() ) );
-
-														 machine->GetState( handle )->SetPosition( XE::Vec2( pos.x(), pos.y() ) );
-
-														 ResetGraphics();
-													 }
+													 ResetGraphics();
 												 } );
 									}
 								} );
@@ -98,17 +85,30 @@ void FSMGraphicsScene::ResetGraphics()
 
 	_Items.clear();
 
-	const auto & states = GetStateMachine()->GetAllState();
+	QMap<XE::StateHandle, ogdf::NodeElement * > nodes;
 
+	ogdf::Graph graph;
+	ogdf::GraphAttributes attr( graph,
+							   ogdf::GraphAttributes::nodeGraphics | ogdf::GraphAttributes::edgeGraphics |
+							   ogdf::GraphAttributes::nodeLabel | ogdf::GraphAttributes::edgeStyle |
+							   ogdf::GraphAttributes::nodeStyle | ogdf::GraphAttributes::nodeTemplate );
+
+	const auto & states = GetStateMachine()->GetAllState();
 	for( const auto & state : states )
 	{
 		if( state )
 		{
 			state->SetStateMachine( GetStateMachine() );
 
+			ogdf::NodeElement * node = graph.newNode();
+			attr.width( node ) = FSMGraphicsItem::Radius;
+			attr.height( node ) = FSMGraphicsItem::Radius;
+
 			auto item = new FSMGraphicsItem();
+
 			item->SetState( state );
 			this->addItem( item );
+			nodes.insert( state->GetHandle(), node );
 			_Items.insert( state->GetHandle(), item );
 		}
 	}
@@ -129,8 +129,25 @@ void FSMGraphicsScene::ResetGraphics()
 				socket->SetLine( { it.value()->pos() + QPointF( FSMGraphicsItem::Radius,FSMGraphicsItem::Radius ),
 								 _Items[c->GetNextStateHandle()]->pos() + QPointF( FSMGraphicsItem::Radius,FSMGraphicsItem::Radius ) } );
 				this->addItem( socket );
+
+				graph.newEdge( nodes[it.key()], nodes[c->GetNextStateHandle()] );
 			}
 		}
+	}
+
+
+	ogdf::SugiyamaLayout layout;
+
+	ogdf::FastHierarchyLayout * ohl = new ogdf::FastHierarchyLayout;
+	ohl->layerDistance( 30 );
+	ohl->nodeDistance( 25 );
+	layout.setLayout( ohl );
+
+	layout.call( attr );
+
+	for( auto it = nodes.begin(); it != nodes.end(); ++it )
+	{
+		_Items[it.key()]->setPos( attr.x( it.value() ), attr.y( it.value() ) );
 	}
 }
 
@@ -147,11 +164,6 @@ void FSMGraphicsScene::AddCondition( XE::StateHandle handle, const XE::IMetaClas
 			_Socket->SetCondition( condition );
 			_Socket->SetLastItem( _Items[handle.GetValue()] );
 			_Socket->SetNextItem( nullptr );
-
-			QLineF line;
-			line.setP1( QPointF( state->GetPosition().x + FSMGraphicsItem::Radius, state->GetPosition().y + FSMGraphicsItem::Radius ) );
-			line.setP2( GetGraphicsView()->mapToScene( GetGraphicsView()->mapFromGlobal( QCursor::pos() ) ) );
-			_Socket->SetLine( line );
 
 			this->addItem( _Socket );
 		}
